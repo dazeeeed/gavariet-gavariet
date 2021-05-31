@@ -1,0 +1,1 @@
+Use lsof -i:socket_id to get PID, and kill it using "kill PID"
