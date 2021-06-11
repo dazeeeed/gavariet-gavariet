@@ -23,20 +23,32 @@ public class Client {
 	       while (serverLine != null){
 	           System.out.println(serverLine);
 	           System.out.flush();
-
+	           //Thread.sleep(1000);
+	           
 	           if(serverLine.equals(Server.incorrectPasswordMsg) | serverLine.equals(Server.correctPasswordMsg)) {   
 	        	   serverLine = reader.readLine();
 	        	   continue;
 	           } else if(serverLine.equals("MENU")){
 	        	   serverLine = reader.readLine();
 	        	   continue;
-	           }
-
+	           } 
+//	           else if(serverLine.equals("Wrong command.")) {
+//	        	   serverLine = "";
+//	        	   continue;
+//	           }
+//	           else {
+//	        	   serverLine = "Empty line";
+//	           }
+	           
 	           userInput = sc.nextLine();
+	           
         	   writer.write(userInput + '\n');
         	   writer.flush(); 	   
-	    	   
+        	   System.out.println("User input = " + userInput);
+
 	           serverLine = reader.readLine();
+	           System.out.println("Server line = " + serverLine);
+
 	           
 	           // exit condition
 	           if(userInput.contains("END")){

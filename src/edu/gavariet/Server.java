@@ -18,6 +18,15 @@ public class Server {
 	public static final String incorrectPasswordMsg = "User or password incorrect!";
 	public static final String correctPasswordMsg = "Password correct!";
 	
+    public static boolean compareStrings(String input, String stringToCheck){
+        for(int i = 0; i<stringToCheck.length(); i++){
+            if(input.charAt(i) != stringToCheck.charAt(i)){
+                return false;
+            } 
+        }
+        return true;
+    }
+	
 	public static void main(String[] args) throws IOException {
 	   
 	   final int SOCKET_ID = 12347;
@@ -37,7 +46,7 @@ public class Server {
            Runnable connection = new Runnable() {
                @Override
                public void run() {
-            	   String username = "", password = "";
+            	   String username = "", password = "", String = "kupa";
                    try {
                        BufferedReader bReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                        BufferedWriter bWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -46,10 +55,15 @@ public class Server {
                        bWriter.write("Write: \"END\" to close the connection.\n");
                        bWriter.flush();
                        
-                       String userInput = "";
+                       String userInput = ""; int i = 0;
 
                        while (!userInput.contains("END")){
-                    	   //System.out.println("While-start");
+                    	   i++;
+//                    	   if(userInput.equals("")) {
+//                    		   System.out.println(i);
+//                    	   } else {
+//                    		   System.out.println("Empty");
+//                    	   }
                     	   if(!isLogged) {	// check if user is logged or not
                     		   bWriter.write("Enter username: ");
                                bWriter.write("\n");
@@ -73,21 +87,34 @@ public class Server {
                                continue;	// next try of login (skip whats below)
                     	   }
                     	   if(printMenu) {
-                    	   	   bWriter.write("MENU\n");
+                    	   	   bWriter.write("MENU");
+                    	   	   bWriter.write("\n");
                     		   bWriter.flush();
-                    		   bWriter.write("List active users: \"LIST\", show help: \"HELP\"\n");
+                    		   bWriter.write("List active users: \"LIST\", show help: \"HELP\", start conversation: \"CONNECT <user>\"");
+                    		   bWriter.write("\n");
                     		   bWriter.flush();
                     		   printMenu = false;
-                    	   }
-                    	   if(userInput.equals("LIST")) {
+                    	   } else if(userInput.equals("LIST") | userInput.equals("LIST\n")) {
                     		   bWriter.write("Active users: "+ loggedIn.toString() +"\n");
                     		   bWriter.flush();
-                    	   } else if(userInput.equals("HELP")){
+                    	   } else if(userInput.strip().equals("HELP")){
                     		   printMenu = true;
+                    		   //userInput = "";
                     		   continue;
-                    	   }
+                    	   } else if(userInput.equalsIgnoreCase("DROP")){
+                    		   bWriter.write("Doing something.\n");
+                    		   bWriter.flush();
+                    	   } else if((userInput.subSequence(0, 7)).equals("CONNECT")){
+                    		   bWriter.write("Connecting.\n");
+                    		   bWriter.flush();
+                    	   } 
+//                    	   else if(userInput.equalsIgnoreCase("DROP")){
+//                    		   bWriter.write("Wrong command.\n");
+//                    		   bWriter.flush();
+//                    	   }
                 		   
                 		   userInput = bReader.readLine();
+                		   System.out.println(userInput);
                 		   //System.out.println("Waiting.");
                     	   
                        }
