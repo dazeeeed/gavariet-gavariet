@@ -28,7 +28,7 @@ public class Server {
        
        // username and password database 
        logins.put("abc", "password");
-       logins.put("gunwiak", "maslo");
+       logins.put("xyz", "1234");
 	   
 	   ServerSocket serverSocket = new ServerSocket(SOCKET_ID);
        ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -75,9 +75,30 @@ public class Server {
                     	   }
                     	   
                     	   if(connectedToSomeone) {
+                    		   if(awaitingMsg.containsKey(username)) {
+                    			   bWriter.write(awaitingMsg.get(username) + "\n");
+                    			   awaitingMsg.remove(username);
+                    		   } else {
+                    			   bWriter.write("No messages.\n");   
+                    		   }
+                    		   bWriter.flush();
+                    		   
                     		   userInput = bReader.readLine();
+                    		   
+                    		   if(userInput.equals("REFRESH")) {
+                    			   continue;
+                    		   }
+                    		   
+                    		   if(awaitingMsg.containsKey(connectToUser)) {
+                    			   awaitingMsg.put(connectToUser, awaitingMsg.get(connectToUser).concat(", "+userInput));
+                    		   } else {
+                    			   awaitingMsg.put(connectToUser, userInput);
+                    		   }
+
+                    		   //System.out.println(awaitingMsg.toString());
                     		   continue;
                     	   }
+                    	   
                     	   if(printMenu) {
                     	   	   bWriter.write("MENU");
                     	   	   bWriter.write("\n");
@@ -91,18 +112,18 @@ public class Server {
                     		   bWriter.flush();
                     	   } else if(userInput.strip().equals("HELP")){
                     		   printMenu = true;
-                    		   //userInput = "";
                     		   continue;
                     	   } else if(userInput.length() >= 8){
                     		   if(userInput.subSequence(0, 7).equals("CONNECT")) {
                     			   connectToUser = userInput.substring(8, userInput.length());
                     			   if(loggedIn.contains(connectToUser) & !(username.equals(connectToUser))) {
                     				   connectedToSomeone = true;
-                    				   bWriter.write("Connected to "+connectToUser+".\n");
+                    				   bWriter.write("Connected to "+connectToUser+".\n"); 
                     			   } else {
                     				   bWriter.write("No such person on server or cannot connect to yourself.\n");
                     			   }
                         		   bWriter.flush();
+                        		   continue;
                     		   }
                     	   } else if(userInput.length() >= 0) {
                     		   // Wrong command condition
@@ -112,22 +133,20 @@ public class Server {
                 		   
                 		   userInput = bReader.readLine();
                 		   System.out.println(userInput);
-                		   //System.out.println("Waiting.");
-                    	   
+                		   //System.out.println("Waiting.");   
                        }
                        System.out.println("Connection closed.");
-                       socket.close();
                        loggedIn.remove(username);
+                       socket.close();
                    } catch (IOException e1) {
-                	   System.out.println("Connection closed.");
+                	   System.out.println("Connection closed terminated.");
                 	   loggedIn.remove(username);
                        //e.printStackTrace();
                    }
-//                   if(loggedIn.contains(username)) {
-//                	   loggedIn.remove(username);
-//                   }
-                   
-                   
+                   if(loggedIn.contains(username)) {
+                	   System.out.println("Case removal");
+                	   loggedIn.remove(username);
+                   } 
                }
            };
            executorService.submit(connection);

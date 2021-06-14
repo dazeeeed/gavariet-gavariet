@@ -15,15 +15,34 @@ public class Client {
 	              
 	       String serverLine = reader.readLine();	//get response from server
 	       String userInput = "";
+	       boolean connected = false;
 	
 	       System.out.println(serverLine);
 	       System.out.flush();
 	       serverLine = reader.readLine();
 	
 	       while (serverLine != null){
+	           
+	    	   if(connected) {
+            	   serverLine = reader.readLine();
+            	   if(!serverLine.equals("No messages.")) {
+            		   System.out.println(serverLine);
+        	           System.out.flush();
+            	   }
+            	   userInput = sc.nextLine();
+    	           
+            	   writer.write(userInput + '\n');
+            	   writer.flush();
+            	   
+            	   if(userInput.contains("END")){
+    	    		   break;
+    	    	   }
+	        	   continue;
+	           }
+	    	   
 	           System.out.println(serverLine);
 	           System.out.flush();
-	           //Thread.sleep(1000);
+
 	           
 	           if(serverLine.equals(Server.incorrectPasswordMsg) 
 	        		   | serverLine.equals(Server.correctPasswordMsg) 
@@ -33,12 +52,12 @@ public class Client {
 	           } 
 	           else if(serverLine.length() >= 9){
 	        	   if(serverLine.substring(0, 9).equals("Connected")) {
-	        		   serverLine = reader.readLine();
+	        		   connected = true;
+	        		   serverLine = "";
 	        		   continue;
 	        	   } 
 	           }
 
-	           
 	           userInput = sc.nextLine();
 	           
         	   writer.write(userInput + '\n');
@@ -48,7 +67,6 @@ public class Client {
 	           serverLine = reader.readLine();
 	           //System.out.println("Server line = " + serverLine);
 
-	           
 	           // exit condition
 	           if(userInput.contains("END")){
 	    		   break;
