@@ -18,20 +18,12 @@ public class Server {
 	public static final String incorrectPasswordMsg = "User or password incorrect!";
 	public static final String correctPasswordMsg = "Password correct!";
 	
-    public static boolean compareStrings(String input, String stringToCheck){
-        for(int i = 0; i<stringToCheck.length(); i++){
-            if(input.charAt(i) != stringToCheck.charAt(i)){
-                return false;
-            } 
-        }
-        return true;
-    }
-	
 	public static void main(String[] args) throws IOException {
 	   
 	   final int SOCKET_ID = 12347;
        
 	   HashMap<String, String> logins = new HashMap<String, String>();
+	   HashMap<String, String> awaitingMsg = new HashMap<String, String>(); //key: USER, value: awaiting msg to user
        ArrayList<String> loggedIn = new ArrayList<String>();
        
        // username and password database 
@@ -46,24 +38,19 @@ public class Server {
            Runnable connection = new Runnable() {
                @Override
                public void run() {
-            	   String username = "", password = "", String = "kupa";
+            	   String username = "", password = "", connectToUser = "";
                    try {
                        BufferedReader bReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                        BufferedWriter bWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                        
-                       boolean isLogged = false, printMenu = true;                    
+                       boolean isLogged = false, printMenu = true, connectedToSomeone = false;                    
                        bWriter.write("Write: \"END\" to close the connection.\n");
                        bWriter.flush();
                        
-                       String userInput = ""; int i = 0;
+                       String userInput = "";
 
                        while (!userInput.contains("END")){
-                    	   i++;
-//                    	   if(userInput.equals("")) {
-//                    		   System.out.println(i);
-//                    	   } else {
-//                    		   System.out.println("Empty");
-//                    	   }
+
                     	   if(!isLogged) {	// check if user is logged or not
                     		   bWriter.write("Enter username: ");
                                bWriter.write("\n");
@@ -86,6 +73,11 @@ public class Server {
                                bWriter.flush();
                                continue;	// next try of login (skip whats below)
                     	   }
+                    	   
+                    	   if(connectedToSomeone) {
+                    		   userInput = bReader.readLine();
+                    		   continue;
+                    	   }
                     	   if(printMenu) {
                     	   	   bWriter.write("MENU");
                     	   	   bWriter.write("\n");
@@ -94,24 +86,29 @@ public class Server {
                     		   bWriter.write("\n");
                     		   bWriter.flush();
                     		   printMenu = false;
-                    	   } else if(userInput.equals("LIST") | userInput.equals("LIST\n")) {
+                    	   } else if(userInput.equals("LIST")) {
                     		   bWriter.write("Active users: "+ loggedIn.toString() +"\n");
                     		   bWriter.flush();
                     	   } else if(userInput.strip().equals("HELP")){
                     		   printMenu = true;
                     		   //userInput = "";
                     		   continue;
-                    	   } else if(userInput.equalsIgnoreCase("DROP")){
-                    		   bWriter.write("Doing something.\n");
+                    	   } else if(userInput.length() >= 8){
+                    		   if(userInput.subSequence(0, 7).equals("CONNECT")) {
+                    			   connectToUser = userInput.substring(8, userInput.length());
+                    			   if(loggedIn.contains(connectToUser) & !(username.equals(connectToUser))) {
+                    				   connectedToSomeone = true;
+                    				   bWriter.write("Connected to "+connectToUser+".\n");
+                    			   } else {
+                    				   bWriter.write("No such person on server or cannot connect to yourself.\n");
+                    			   }
+                        		   bWriter.flush();
+                    		   }
+                    	   } else if(userInput.length() >= 0) {
+                    		   // Wrong command condition
+                    		   bWriter.write("Wrong command.\n");
                     		   bWriter.flush();
-                    	   } else if((userInput.subSequence(0, 7)).equals("CONNECT")){
-                    		   bWriter.write("Connecting.\n");
-                    		   bWriter.flush();
-                    	   } 
-//                    	   else if(userInput.equalsIgnoreCase("DROP")){
-//                    		   bWriter.write("Wrong command.\n");
-//                    		   bWriter.flush();
-//                    	   }
+                    	   }
                 		   
                 		   userInput = bReader.readLine();
                 		   System.out.println(userInput);
@@ -120,13 +117,15 @@ public class Server {
                        }
                        System.out.println("Connection closed.");
                        socket.close();
+                       loggedIn.remove(username);
                    } catch (IOException e1) {
                 	   System.out.println("Connection closed.");
+                	   loggedIn.remove(username);
                        //e.printStackTrace();
                    }
-                   if(loggedIn.contains(username)) {
-                	   loggedIn.remove(username);
-                   }
+//                   if(loggedIn.contains(username)) {
+//                	   loggedIn.remove(username);
+//                   }
                    
                    
                }
